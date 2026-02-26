@@ -39,7 +39,7 @@ class Config:
     pg_settings:Postgres
     redis_settings:Redis
 
-def get_config(path:str |None= None)->Config:
+def get_config(path:str | None= None)->Config:
     env = Env()
     env.read_env(path)
     return Config(
