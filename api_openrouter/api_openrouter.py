@@ -1,6 +1,6 @@
 from openai import OpenAI
 from config.config import get_config
-def get_ai(request):
+def get_ai(request)-> str:
     api_token = get_config().ai.token
     client = OpenAI(
         api_key=api_token,
@@ -14,3 +14,5 @@ def get_ai(request):
     )
 
     return response.choices[0].message.content
+
+
