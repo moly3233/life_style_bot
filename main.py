@@ -8,7 +8,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import parse_mode
 from redis.asyncio import Redis
 from handlers.other_handler import other_router
-from handlers.main_handler import main_router
+from handlers.load_every_day_report_handler import main_router
+from handlers.get_every_day_reports_handler import get_reports_router
 import asyncio
 import logging
 
@@ -42,9 +43,12 @@ async def main():
     )
     dp['conn'] = conn
     dp.include_router(main_router)
+    dp.include_router(get_reports_router)
     dp.include_router(other_router)
 
     await dp.start_polling(bot, disable_notifications=True)
     logger.info('Bot started.')
+
+
 if __name__ == '__main__':
     asyncio.run(main())

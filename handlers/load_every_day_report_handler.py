@@ -19,7 +19,7 @@ class UserStates(StatesGroup):
 @main_router.message(Command(commands='start'))
 async def start_process(message: Message):
     await message.answer('Привет, пока идет разработка,функционала нет',
-                         reply_markup= get_callback_inline_keyboard('Ежедневный отчет'))
+                         reply_markup= get_callback_inline_keyboard('Ежедневный отчет', 'Мои отчеты'))
 
 @main_router.callback_query(F.data == 'Ежедневный отчет')
 async def every_day_report(callback_query: CallbackQuery,state: FSMContext):
