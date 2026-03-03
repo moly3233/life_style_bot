@@ -10,6 +10,7 @@ from redis.asyncio import Redis
 from handlers.other_handler import other_router
 from handlers.load_every_day_report_handler import main_router
 from handlers.get_every_day_reports_handler import get_reports_router
+from utils.reminders import start_reminders, send_daily_remind
 import asyncio
 import logging
 
@@ -19,6 +20,11 @@ config:Config = get_config()
 logging.basicConfig(level=config.logging.level,
                     format = config.logging.format)
 logger = logging.getLogger(__name__)
+
+
+
+
+
 async def main():
     logger.info('Starting bot ...')
     storage = MemoryStorage()
@@ -45,6 +51,8 @@ async def main():
     dp.include_router(main_router)
     dp.include_router(get_reports_router)
     dp.include_router(other_router)
+
+    start_reminders(bot,conn)
 
     await dp.start_polling(bot, disable_notifications=True)
     logger.info('Bot started.')
