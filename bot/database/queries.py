@@ -1,6 +1,7 @@
 from psycopg import AsyncConnection
 from psycopg.rows import dict_row
 import datetime
+from typing import List, Tuple
 
 async def load_today_to_db(conn: AsyncConnection, tg_id, mood, day_desc, mentor_desc, conclusion):
     today = datetime.date.today()
@@ -72,3 +73,39 @@ async def get_all_tg_id_query(conn: AsyncConnection) -> list:
         ids = [int(row[0]) for row in rows]
 
     return ids
+
+
+async def get_date_mood_for(
+        conn: AsyncConnection,
+        tg_id: int,
+        days: int = 30
+) -> Tuple[List[str], List[int]]:
+    today = datetime.date.today()
+    start_date = today - datetime.timedelta(days=days - 1)
+
+    query = """
+        SELECT date, mood
+        FROM app.every_day_report
+        WHERE tg_id = %s 
+          AND date BETWEEN %s AND %s
+        ORDER BY date ASC  
+    """
+
+    params = (str(tg_id), start_date, today)
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        rows = await cur.fetchall()
+
+        if not rows:
+            print(f"Нет отчётов для tg_id={tg_id} за последние {days} дней")
+            return [], []
+
+        dates = [row[0].strftime('%Y-%m-%d') for row in rows]
+        moods = [row[1] for row in rows]
+
+        print("Получены данные:")
+        print("dates:", dates)
+        print("moods:", moods)
+
+        return dates, moods

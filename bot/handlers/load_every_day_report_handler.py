@@ -1,13 +1,16 @@
+from io import BytesIO
+
 from aiogram import Router,F
 from aiogram.enums import ChatAction
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery,BufferedInputFile
 from aiogram.filters import Command
+from utils.generate_chart import generate_mood_chart_image
 from keyboards.inline_keyboards_builder import get_callback_inline_keyboard
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import State, StatesGroup,StateFilter
 from api_openrouter.api_openrouter import get_ai
 from promts.every_day_report import promt_every_day_report
-from database.queries import load_today_to_db,has_report_today
+from database.queries import load_today_to_db,has_report_today, get_date_mood_for
 from psycopg import AsyncConnection
 
 main_router = Router()
@@ -17,9 +20,22 @@ class UserStates(StatesGroup):
     conclusion = State()
 
 @main_router.message(Command(commands='start'))
-async def start_process(message: Message):
+async def start_process(message: Message, conn: AsyncConnection):
+    dates, moods = await get_date_mood_for(conn, message.from_user.id, days=30)
+    chart_bytes = await generate_mood_chart_image(dates, moods)
+
+    if chart_bytes is None:
+        await message.answer("Нет данных или ошибка построения графика")
+        return
+
+
+    await message.answer_photo(
+        photo=BufferedInputFile(file=chart_bytes, filename="mood_chart.png"),
+        caption="График настроения за период"
+    )
     await message.answer('Привет, пока идет разработка,функционала нет',
                          reply_markup= get_callback_inline_keyboard('Ежедневный отчет', 'Мои отчеты'))
+
 
 @main_router.callback_query(F.data == 'Ежедневный отчет')
 async def every_day_report(callback_query: CallbackQuery,state: FSMContext,conn: AsyncConnection):

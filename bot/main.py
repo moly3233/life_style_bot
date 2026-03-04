@@ -51,7 +51,6 @@ async def main():
     dp.include_router(main_router)
     dp.include_router(get_reports_router)
     dp.include_router(other_router)
-
     start_reminders(bot,conn)
 
     await dp.start_polling(bot, disable_notifications=True)

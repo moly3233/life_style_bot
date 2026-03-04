@@ -32,18 +32,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-  bot:
-    image: lifestyle-bot:latest
-    container_name: lifestyle-bot
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - .:/app
-    command: python -m main
+#  bot:
+#    image: lifestyle-bot:latest
+#    container_name: lifestyle-bot
+#    restart: unless-stopped
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#    volumes:
+#      - .:/app
+#    command: python -m main
 
 volumes:
   pg_data:
