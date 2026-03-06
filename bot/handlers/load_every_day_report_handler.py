@@ -1,8 +1,6 @@
-from io import BytesIO
-
 from aiogram import Router,F
 from aiogram.enums import ChatAction
-from aiogram.types import Message, CallbackQuery,BufferedInputFile
+from aiogram.types import Message, CallbackQuery,FSInputFile
 from aiogram.filters import Command
 from utils.generate_chart import generate_mood_chart_image
 from keyboards.inline_keyboards_builder import get_callback_inline_keyboard
@@ -21,20 +19,27 @@ class UserStates(StatesGroup):
 
 @main_router.message(Command(commands='start'))
 async def start_process(message: Message, conn: AsyncConnection):
-    dates, moods = await get_date_mood_for(conn, message.from_user.id, days=30)
-    chart_bytes = await generate_mood_chart_image(dates, moods)
-
-    if chart_bytes is None:
-        await message.answer("Нет данных или ошибка построения графика")
-        return
-
 
     await message.answer_photo(
-        photo=BufferedInputFile(file=chart_bytes, filename="mood_chart.png"),
-        caption="График настроения за период"
+                    photo = FSInputFile('/Users/moly/life_style_bot/bot/media/main_menu.png'),
+                    reply_markup= get_callback_inline_keyboard('Ежедневный отчет', 'Мои отчеты', 'Статистика'),
+        caption="""
+                    <b>Привет, бро! 👊</b>
+
+                    Это твой личный бот для ежедневных отчётов — пиши как день прошёл, получай честный разбор от ментора и смотри, как меняется настроение со временем.
+
+                    Поддержка и автор — <a href="tg://user?id=твой_user_id">@molypap</a> (пиши туда, если что-то сломалось или есть идеи).
+
+                    Давай начинать?
+
+                    Выбирай, что делаем сегодня:
+                    • <b>Ежедневный отчёт</b> — запиши свой день
+                    • <b>Мои отчёты</b> — глянь старые записи
+                    • <b>Статистика</b> — средний вайб и тренды
+
+                    Жду твоего клика 🚀
+                        """,
     )
-    await message.answer('Привет, пока идет разработка,функционала нет',
-                         reply_markup= get_callback_inline_keyboard('Ежедневный отчет', 'Мои отчеты'))
 
 
 @main_router.callback_query(F.data == 'Ежедневный отчет')
@@ -103,6 +108,8 @@ async def get_day_desc_fail(message: Message, state: FSMContext):
 async def get_conclusion(message: Message, state: FSMContext, conn:AsyncConnection):
     data = await state.get_data()
     await load_today_to_db(conn,message.from_user.id, data['mood'], data['day_desc'], data['mentor_desc'],message.text)
-    await message.answer('Спасибо за твой отчет! Надеюсь ты вынес из этого свои выводы. Этот отчет сохарнился, ты можешь посмотреть его в любое время')
+    await message.answer(
+        'Спасибо за твой отчет! Надеюсь ты вынес из этого свои выводы. Этот отчет сохарнился, ты можешь посмотреть его в любое время',
+    )
     await state.clear()
     await start_process(message)

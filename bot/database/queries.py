@@ -109,3 +109,25 @@ async def get_date_mood_for(
         print("moods:", moods)
 
         return dates, moods
+
+async def get_all_day_descriptions_for(conn: AsyncConnection, tg_id: int, days: int):
+    today = datetime.date.today()
+    start_date = today - datetime.timedelta(days=days)
+
+    query = """
+        SELECT day_description
+        FROM app.every_day_report
+        WHERE tg_id = %s AND date BETWEEN %s AND %s
+        ORDER BY date ASC
+    """
+    params = (str(tg_id), start_date, today)
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        rows = await cur.fetchall()
+        if not rows:
+             raise Exception
+
+        descriptions = [desc[0] for desc in rows]
+        print(descriptions)
+        return descriptions
