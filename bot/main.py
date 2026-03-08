@@ -11,6 +11,7 @@ from handlers.other_handler import other_router
 from handlers.load_every_day_report_handler import main_router
 from handlers.get_every_day_reports_handler import get_reports_router
 from handlers.get_statistics_handler import statistics_router
+from handlers.users_targets_handler import targets_router
 from utils.reminders import start_reminders, send_daily_remind
 import asyncio
 import logging
@@ -52,6 +53,7 @@ async def main():
     dp.include_router(main_router)
     dp.include_router(get_reports_router)
     dp.include_router(statistics_router)
+    dp.include_router(targets_router)
     dp.include_router(other_router)
     start_reminders(bot,conn)
 

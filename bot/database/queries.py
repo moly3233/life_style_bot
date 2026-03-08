@@ -81,7 +81,7 @@ async def get_date_mood_for(
         days: int = 30
 ) -> Tuple[List[str], List[int]]:
     today = datetime.date.today()
-    start_date = today - datetime.timedelta(days=days - 1)
+    start_date = today - datetime.timedelta(days=days )
 
     query = """
         SELECT date, mood
@@ -131,3 +131,46 @@ async def get_all_day_descriptions_for(conn: AsyncConnection, tg_id: int, days: 
         descriptions = [desc[0] for desc in rows]
         print(descriptions)
         return descriptions
+
+async def load_target(conn: AsyncConnection, tg_id: int, target_text:str):
+    today = datetime.date.today()
+
+    query = """
+        INSERT INTO app.users_targets (tg_id, target_text, created_at, is_active)
+        VALUES (%s, %s, %s, True)
+    """
+    params = (str(tg_id), target_text, today)
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+    await conn.commit()
+
+async def get_active_targets_query(conn: AsyncConnection, tg_id: int):
+    query = """
+        SELECT target_text
+        FROM app.users_targets
+        WHERE tg_id = %s AND is_active = True
+        ORDER BY created_at DESC
+    """
+    params = (str(tg_id),)
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        rows = await cur.fetchall()
+        targets = ['~ '+ row[0] for row in rows]
+        if not rows:
+            return []
+        else:
+            return targets
+
+async def set_status_target_query(conn: AsyncConnection, tg_id: int, target_text: str):
+    query = """ 
+        UPDATE app.users_targets
+        SET is_active = False
+        WHERE tg_id = %s AND target_text = %s
+    """
+    params = (str(tg_id), target_text)
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+    await conn.commit()
+
+

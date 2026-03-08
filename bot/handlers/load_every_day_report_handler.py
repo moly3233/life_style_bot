@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import State, StatesGroup,StateFilter
 from api_openrouter.api_openrouter import get_ai
 from promts.every_day_report import promt_every_day_report
-from database.queries import load_today_to_db,has_report_today, get_date_mood_for
+from database.queries import load_today_to_db,has_report_today, get_date_mood_for, get_active_targets_query
 from psycopg import AsyncConnection
 
 main_router = Router()
@@ -19,26 +19,31 @@ class UserStates(StatesGroup):
 
 @main_router.message(Command(commands='start'))
 async def start_process(message: Message, conn: AsyncConnection):
+    lines = [
+        "<b>Привет, бро! 👊</b>",
+        "",
+        "Это твой личный бот для ежедневных отчётов — пиши как день прошёл, получай честный разбор от ментора и смотри, как меняется настроение со временем.",
+        "",
+        "Поддержка и автор — <a href=\"tg://user?id=твой_user_id\">@molypap</a> (пиши туда, если что-то сломалось или есть идеи).",
+        "",
+        "Давай начинать?",
+        "Выбирай, что делаем сегодня:",
+        "• <b>Ежедневный отчёт</b> — запиши свой день",
+        "• <b>Мои отчёты</b> — глянь старые записи",
+        "• <b>Статистика</b> — средний вайб и тренды",
+        "",
+        "Жду твоего клика 🚀"
+    ]
 
     await message.answer_photo(
                     photo = FSInputFile('/Users/moly/life_style_bot/bot/media/main_menu.png'),
-                    reply_markup= get_callback_inline_keyboard('Ежедневный отчет', 'Мои отчеты', 'Статистика'),
-        caption="""
-                    <b>Привет, бро! 👊</b>
-
-                    Это твой личный бот для ежедневных отчётов — пиши как день прошёл, получай честный разбор от ментора и смотри, как меняется настроение со временем.
-
-                    Поддержка и автор — <a href="tg://user?id=твой_user_id">@molypap</a> (пиши туда, если что-то сломалось или есть идеи).
-
-                    Давай начинать?
-
-                    Выбирай, что делаем сегодня:
-                    • <b>Ежедневный отчёт</b> — запиши свой день
-                    • <b>Мои отчёты</b> — глянь старые записи
-                    • <b>Статистика</b> — средний вайб и тренды
-
-                    Жду твоего клика 🚀
-                        """,
+                    reply_markup= get_callback_inline_keyboard(
+                        'Ежедневный отчет',
+                        'Мои отчеты',
+                        'Статистика',
+                        'Цели'
+                    ),
+        caption= '\n'.join(lines),
     )
 
 
@@ -65,20 +70,21 @@ async def get_mood(message: Message, state: FSMContext):
         await message.answer('Заполение отчета сброшено!')
 
 @main_router.message(lambda x: not x.text.isdigit() or not(0<int(x.text)<=10),StateFilter(UserStates.mood))
-async def get_mood_fail(message: Message, state: FSMContext):
+async def get_mood_fail(message: Message, state: FSMContext,conn: AsyncConnection):
     if message.text != 'ВСЕ':
         await message.answer('Бро! Напиши только число от 1 до 10')
     else:
         await state.clear()
         await message.answer('Заполение отчета сброшено!')
-        await start_process(message)
+        await start_process(message,conn)
 
 @main_router.message(lambda x: len(x.text.strip())>50, StateFilter(UserStates.day_desc))
-async def get_day_desc(message: Message, state: FSMContext):
+async def get_day_desc(message: Message, state: FSMContext,conn: AsyncConnection):
     if message.text!= 'ВСЕ':
         data = await state.get_data()
         await state.update_data(day_desc = message.text)
-        day = promt_every_day_report(data['mood'], message.text)
+        targets = await get_active_targets_query(conn, message.from_user.id)
+        day = promt_every_day_report(data['mood'], message.text,targets)
         await message.bot.send_chat_action(
             chat_id= message.chat.id,
             action=ChatAction.TYPING
@@ -93,6 +99,7 @@ async def get_day_desc(message: Message, state: FSMContext):
     else:
         await state.clear()
         await message.answer('Заполение отчета сброшено!')
+        await start_process(message, conn)
 
 @main_router.message(lambda x: not len(x.text.strip())>50, StateFilter(UserStates.day_desc))
 async def get_day_desc_fail(message: Message, state: FSMContext):
@@ -112,4 +119,4 @@ async def get_conclusion(message: Message, state: FSMContext, conn:AsyncConnecti
         'Спасибо за твой отчет! Надеюсь ты вынес из этого свои выводы. Этот отчет сохарнился, ты можешь посмотреть его в любое время',
     )
     await state.clear()
-    await start_process(message)
+    await start_process(message,conn)
