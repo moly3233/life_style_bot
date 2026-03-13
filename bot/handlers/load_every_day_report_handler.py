@@ -39,6 +39,7 @@ async def start_process(message: Message, conn: AsyncConnection):
                     photo = FSInputFile('/Users/moly/life_style_bot/bot/media/main_menu.png'),
                     reply_markup= get_callback_inline_keyboard(
                         'Ежедневный отчет',
+                        'Физуха',
                         'Мои отчеты',
                         'Статистика',
                         'Цели'

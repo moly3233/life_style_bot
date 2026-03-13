@@ -173,4 +173,24 @@ async def set_status_target_query(conn: AsyncConnection, tg_id: int, target_text
         await cur.execute(query, params)
     await conn.commit()
 
+async def load_user_training_query(
+        conn: AsyncConnection,
+        tg_id: int,
+        training_name:str,
+        mood_before:int,
+        training_log:str,
+        mood_after:int,
+        feelings_after:str,
+        mentor_comment:str
+):
+    today = datetime.date.today().strftime('%Y-%m-%d')
 
+    query = """
+        INSERT INTO app.users_trainings VALUES
+        (%s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    params = (str(tg_id),today, training_name, mood_before, training_log,mood_after, feelings_after, mentor_comment)
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+    await conn.commit()
