@@ -194,3 +194,108 @@ async def load_user_training_query(
     async with conn.cursor() as cur:
         await cur.execute(query, params)
     await conn.commit()
+
+
+async def get_user_bmi(conn: AsyncConnection, tg_id: int):
+    query = """ 
+            SELECT measured_at, height_cm, weight_kg, bmi
+            FROM app.users_imt_metrics
+            WHERE tg_id = %s AND is_active = True
+            ORDER BY measured_at desc
+            LIMIT 1
+        """
+    params = (str(tg_id),)
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        row = await cur.fetchone()
+        if row is None:
+            return False
+        else:
+            res = {
+                'measured_at': row[0],
+                'height_cm': row[1],
+                'weight_kg': row[2],
+                'bmi': row[3]
+            }
+        return res
+
+
+async def get_trainings_dates(conn: AsyncConnection, tg_id: int):
+    query = """ 
+        SELECT date
+        FROM app.users_trainings
+        WHERE tg_id = %s 
+        ORDER BY date DESC
+    """
+    params = (str(tg_id),)
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        rows = await cur.fetchall()
+        res = ['Тренировка за '+ row[0].strftime('%Y-%m-%d') for row in rows]
+        if not rows:
+            return ['Тренировок нет']
+        return res
+
+async def get_training_info_query(conn: AsyncConnection, tg_id:int, training_date:str):
+    query = """
+        SELECT date, training_name, mood_before, training_log, mood_after, feelings_after, mentor_comment
+        FROM app.users_trainings
+        WHERE tg_id = %s AND date = %s
+    """
+    params = (str(tg_id), training_date)
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        row = await cur.fetchone()
+        if row is None:
+            return None
+        res = {
+            'date': row[0],
+            'training_name': row[1],
+            'mood_before': row[2],
+            'training_log': row[3],
+            'mood_after': row[4],
+            'feelings_after': row[5],
+            'mentor_comment': row[6]
+        }
+    return res
+
+async def change_weight_query(conn: AsyncConnection, tg_id: int, weight: int):
+    today = datetime.date.today().strftime('%Y-%m-%d')
+
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """
+            SELECT height_cm 
+            FROM app.users_imt_metrics
+            WHERE tg_id = %s AND is_active = TRUE
+            ORDER BY measured_at DESC
+            LIMIT 1
+            """,
+            (str(tg_id),)
+        )
+        height_row = await cur.fetchone()
+
+    height_cm = height_row[0] if height_row else None
+
+
+
+    async with conn.transaction():
+
+        await conn.execute(
+            """
+            UPDATE app.users_imt_metrics
+            SET is_active = FALSE
+            WHERE tg_id = %s AND is_active = TRUE
+            """,
+            (str(tg_id),)
+        )
+
+        await conn.execute(
+            """
+            INSERT INTO app.users_imt_metrics 
+                (tg_id, measured_at, height_cm, weight_kg, is_active)
+            VALUES (%s, %s, %s, %s, TRUE)
+            """,
+            (str(tg_id), today, height_cm, weight,)
+        )
+    await conn.commit()

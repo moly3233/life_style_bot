@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from handlers.load_every_day_report_handler import start_process
 from bot.api_openrouter.api_openrouter import get_ai
 from bot.promts.sport_tracker_promts import prompt_training_mentor
-from bot.database.queries import load_user_training_query
+from bot.database.queries import load_user_training_query,get_trainings_dates,get_training_info_query
 
 
 
@@ -27,7 +27,8 @@ async def sport_traker_menu(callback_query: CallbackQuery):
        reply_markup= get_callback_inline_keyboard(
            'Добавить тренировку',
             'Мои тренировки',
-            'Трекер веса'
+            'Трекер ИМТ',
+           '🔙 В начало'
        )
    )
 
@@ -141,3 +142,39 @@ async def fail_input_feelings_after(message:Message, state:FSMContext,conn:Async
     else:
         await message.answer('Бро, описание меньше 5 букв не подходит, нужно больше 5')
 
+@sport_traker.callback_query(F.data == 'Мои тренировки')
+async def get_my_trainings(callback_query:CallbackQuery, conn:AsyncConnection):
+    await callback_query.message.delete()
+    data = await get_trainings_dates(conn,callback_query.from_user.id)
+    await callback_query.message.answer(
+        '🏋️ Вот все твои тренировки',
+        reply_markup= get_callback_inline_keyboard(
+            *data,
+            '🔙 В начало'
+        )
+    )
+
+@sport_traker.callback_query(F.data.startswith('Тренировка за '))
+async def get_training_info(callback_query:CallbackQuery, conn:AsyncConnection):
+    await callback_query.message.delete()
+    data = await get_training_info_query(conn,
+                                         callback_query.from_user.id,
+                                         callback_query.data[14:]
+                                         )
+    lines = [
+        f"🕐 <strong>Дата тренировки</strong>: {data['date']}",
+        f"🏋️<strong> Название</strong>: {data['training_name']}",
+        f"😌<strong> Настроение до </strong>: {data['mood_before']}/10",
+        f"📝<strong> Что делал:</strong>",
+        f"{data['training_log']}",
+        f"🔥<strong> Настроение / ощущения после </strong>: {data['mood_after']}/10",
+        f"<i>{data['feelings_after'] or 'Не указано'}</i>",
+        "",
+        "🤖<strong> Комментарий ментора </strong>:",
+        "--------------------------",
+        data['mentor_comment'] or "Ментор пока не прокомментировал"
+    ]
+
+    await callback_query.message.answer("\n".join(lines),
+                                        parse_mode='HTML',
+                                        reply_markup=get_callback_inline_keyboard('🔙 В начало'))

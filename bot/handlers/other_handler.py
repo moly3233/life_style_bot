@@ -18,3 +18,7 @@ async def answer_callback(query: CallbackQuery):
 async def to_begin_process(callback: CallbackQuery,conn):
     await callback.message.delete()
     await start_process(callback.message,conn)
+
+@other_router.callback_query(F.data == 'Тренировок нет')
+async def trainings_is_none_allert(callback: CallbackQuery,):
+    await callback.answer('Добавь свою первую тренировку!')
