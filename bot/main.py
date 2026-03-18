@@ -7,6 +7,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import parse_mode
 from redis.asyncio import Redis
+from bot.database.queries import get_id_admins_query
 from handlers.other_handler import other_router
 from handlers.load_every_day_report_handler import main_router
 from handlers.get_every_day_reports_handler import get_reports_router
@@ -14,6 +15,7 @@ from handlers.get_statistics_handler import statistics_router
 from handlers.users_targets_handler import targets_router
 from handlers.sport_traker_handler import sport_traker
 from handlers.tracker_imt_handler import tracker_imt_router
+from handlers.admins_handler import admin_router
 from utils.reminders import start_reminders, send_daily_remind
 import asyncio
 import logging
@@ -51,13 +53,17 @@ async def main():
         config.pg_settings.host,
         config.pg_settings.port,
     )
+    admins = await get_id_admins_query(conn)
+    dp['admins'] = set(admins)
     dp['conn'] = conn
+    dp['bot'] = bot
     dp.include_router(main_router)
     dp.include_router(get_reports_router)
     dp.include_router(statistics_router)
     dp.include_router(targets_router)
     dp.include_router(sport_traker)
     dp.include_router(tracker_imt_router)
+    dp.include_router(admin_router)
     dp.include_router(other_router)
     start_reminders(bot,conn)
 

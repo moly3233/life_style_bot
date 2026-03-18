@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from psycopg import AsyncConnection
-from bot.database.queries import get_user_bmi, change_weight_query
+from bot.database.queries import get_user_bmi, change_weight_query, change_height_query
 from bot.handlers.load_every_day_report_handler import start_process
 from bot.promts.sport_tracker_promts import prompt_bmi_simple
 from bot.api_openrouter.api_openrouter import get_ai
@@ -78,7 +78,23 @@ async def change_weight(message: Message, state: FSMContext, conn: AsyncConnecti
     await start_process(message, conn)
 
 @tracker_imt_router.message(StateFilter(user_states.input_weight), lambda x: not x.text.isdigit())
-async def fail_change_weight(message: Message, state: FSMContext, conn: AsyncConnection):
+async def fail_change_weight(message: Message, ):
     await message.answer('Введите только число - ваш новый вес')
 
+@tracker_imt_router.callback_query(F.data == '🔝Рост')
+async def wait_user_height(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.message.delete()
+    await state.set_state(user_states.input_height)
+    await callback_query.message.answer( '⚡️<i>Смена Роста. Напиши свой новый рост</i>')
+
+@tracker_imt_router.message(StateFilter(user_states.input_height), lambda x:  x.text.isdigit())
+async def change_height(message: Message, state: FSMContext, conn: AsyncConnection):
+    await change_height_query(conn,message.from_user.id, int(message.text))
+    await state.clear()
+    await message.answer(f'Рост изменен на {message.text} см')
+    await start_process(message,conn)
+
+@tracker_imt_router.message(StateFilter(user_states.input_height), lambda x: not x.text.isdigit())
+async def fail_change_height(message: Message, ):
+    await message.answer('Введите только число - ваш новый рост')
 

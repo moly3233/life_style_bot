@@ -22,3 +22,4 @@ async def to_begin_process(callback: CallbackQuery,conn):
 @other_router.callback_query(F.data == 'Тренировок нет')
 async def trainings_is_none_allert(callback: CallbackQuery,):
     await callback.answer('Добавь свою первую тренировку!')
+

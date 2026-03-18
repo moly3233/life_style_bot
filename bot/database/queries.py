@@ -277,8 +277,6 @@ async def change_weight_query(conn: AsyncConnection, tg_id: int, weight: int):
 
     height_cm = height_row[0] if height_row else None
 
-
-
     async with conn.transaction():
 
         await conn.execute(
@@ -299,3 +297,67 @@ async def change_weight_query(conn: AsyncConnection, tg_id: int, weight: int):
             (str(tg_id), today, height_cm, weight,)
         )
     await conn.commit()
+
+async def change_height_query(conn:AsyncConnection, tg_id: int, height: int):
+    today = datetime.date.today().strftime('%Y-%m-%d')
+
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """
+            SELECT weight_kg 
+            FROM app.users_imt_metrics
+            WHERE tg_id = %s AND is_active = TRUE
+            ORDER BY measured_at DESC
+            LIMIT 1
+            """,
+            (str(tg_id),)
+        )
+        weight_row =await cur.fetchone()
+    weight_kg = weight_row[0] if weight_row else None
+
+    async with conn.transaction():
+        await conn.execute(
+            """ 
+            UPDATE app.users_imt_metrics
+            SET is_active = FALSE
+            WHERE tg_id = %s AND is_active = TRUE
+            """,
+            (str(tg_id),)
+        )
+    await conn.commit()
+
+    async with conn.transaction():
+        await conn.execute(
+            """
+            INSERT INTO app.users_imt_metrics VALUES
+            (%s, %s,%s,%s)
+            """,
+            (str(tg_id), today, height, weight_kg,)
+        )
+    await conn.commit()
+
+
+async def get_id_admins_query(conn: AsyncConnection):
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """ 
+                SELECT tg_id
+                FROM app.users_role
+                WHERE role = 'admin'
+            """
+        )
+        admin_row = await cur.fetchall()
+    admin_ids = [row[0] for row in admin_row]
+    return admin_ids
+
+async def get_id_users_query(conn: AsyncConnection):
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """
+                SELECT tg_id
+                FROM app.users_role
+            """
+        )
+        users_row = await cur.fetchall()
+    user_ids = [row[0] for row in users_row]
+    return user_ids
