@@ -381,7 +381,7 @@ async def get_date_weight_query(conn:AsyncConnection, tg_id: int):
         rows = await cur.fetchall()
         if not rows:
             return None
-        dates = [row[0] for row in rows]
+        dates = [row[0].strftime('%Y-%m-%d') for row in rows]
         weights = [float(row[1]) for row in rows if row[1] is not None]
     return dates, weights
 

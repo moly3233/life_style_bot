@@ -10,6 +10,7 @@ from database.queries import(get_date_mood_for, get_all_day_descriptions_for,
                             get_date_weight_query,
                             get_trainings_log_for_month_query)
 from promts.every_day_report import prompt_period_report
+from promts.sport_tracker_promts import promt_train_analysis
 from api_openrouter.api_openrouter import get_ai
 
 
@@ -82,14 +83,7 @@ async def get_every_day_report_for_month(callback_query: CallbackQuery,conn: Asy
 async def get_trainings_statistics(callback_query: CallbackQuery,conn: AsyncConnection):
     await callback_query.message.delete()
     dates, weights = await get_date_weight_query(conn, callback_query.from_user.id)
-    names, train, feelings = await get_trainings_log_for_month_query(conn, callback_query.from_user.id)
-    print("Перед графиком:")
-    print("dates:", dates)
-    print("weights:", weights)
-    print("len(dates):", len(dates))
-    print("len(weights):", len(weights))
-    print("тип dates[0]:", type(dates[0]) if dates else None)
-    print("тип weights[0]:", type(weights[0]) if weights else None)
+    names, training, feelings = await get_trainings_log_for_month_query(conn, callback_query.from_user.id)
     chart_bytes = await generate_mood_chart_image(dates, weights, 'График твоего веса за месяц', 'Дата', 'Вес кг')
     if chart_bytes is None:
         await callback_query.answer("Нет данных или ошибка построения графика")
@@ -100,6 +94,14 @@ async def get_trainings_statistics(callback_query: CallbackQuery,conn: AsyncConn
         caption="График веса за неделю",
         chat_action=ChatAction.TYPING
     )
+
+    await callback_query.message.answer(
+        get_ai(promt_train_analysis(names, training, feelings)),
+    )
+
+    await start_process(callback_query.message, conn)
+
+
 
 
 
