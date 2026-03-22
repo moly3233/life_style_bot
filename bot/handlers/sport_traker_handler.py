@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, FSInputFile
 from psycopg import AsyncConnection
 from bot.keyboards.inline_keyboards_builder import get_callback_inline_keyboard
 from aiogram.filters.state import State, StatesGroup,StateFilter
@@ -22,15 +22,18 @@ class user_states(StatesGroup):
 @sport_traker.callback_query(F.data == 'Физуха')
 async def sport_traker_menu(callback_query: CallbackQuery):
    await callback_query.message.delete()
-   await callback_query.message.answer(
-       'Здесь ты полностью можешь сосредоточиться на одной из твоих форм жизни - теле. Тренируй его, следи за ним.',
-       reply_markup= get_callback_inline_keyboard(
+   await callback_query.bot.send_photo(
+       chat_id=callback_query.message.chat.id,
+       photo= FSInputFile('/Users/moly/life_style_bot/bot/media/pe.png'),
+       caption= 'Здесь ты полностью можешь сосредоточиться на одной из твоих форм жизни - теле. Тренируй его, следи за ним.',
+       reply_markup=get_callback_inline_keyboard(
            'Добавить тренировку',
-            'Мои тренировки',
-            'Трекер ИМТ',
+           'Мои тренировки',
+           'Трекер ИМТ',
            '🔙 В начало'
        )
    )
+
 
 @sport_traker.callback_query(F.data == 'Добавить тренировку')
 async def start_fsm_sport_traker(callback_query: CallbackQuery, state: FSMContext):
@@ -146,13 +149,16 @@ async def fail_input_feelings_after(message:Message, state:FSMContext,conn:Async
 async def get_my_trainings(callback_query:CallbackQuery, conn:AsyncConnection):
     await callback_query.message.delete()
     data = await get_trainings_dates(conn,callback_query.from_user.id)
-    await callback_query.message.answer(
-        '🏋️ Вот все твои тренировки',
+    await callback_query.bot.send_photo(
+        chat_id=callback_query.message.chat.id,
+        photo=FSInputFile('/Users/moly/life_style_bot/bot/media/my_trainings.png'),
+        caption= '🏋️ Вот все твои тренировки',
         reply_markup= get_callback_inline_keyboard(
             *data,
             '🔙 В начало'
         )
     )
+
 
 @sport_traker.callback_query(F.data.startswith('Тренировка за '))
 async def get_training_info(callback_query:CallbackQuery, conn:AsyncConnection):

@@ -361,3 +361,49 @@ async def get_id_users_query(conn: AsyncConnection):
         users_row = await cur.fetchall()
     user_ids = [row[0] for row in users_row]
     return user_ids
+
+async def get_date_weight_query(conn:AsyncConnection, tg_id: int):
+    today = datetime.date.today()
+    start_date = (today - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
+
+    query = """
+        SELECT subquery.measured_at, subquery.weight
+        FROM (
+            select tg_id, measured_at, height_cm, coalesce(weight_kg,0) as weight,bmi, is_active
+            from app.users_imt_metrics
+            ) subquery
+        WHERE tg_id = %s AND measured_at between %s AND %s
+    """
+    params = (str(tg_id), start_date, today.strftime('%Y-%m-%d'))
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        rows = await cur.fetchall()
+        if not rows:
+            return None
+        dates = [row[0] for row in rows]
+        weights = [float(row[1]) for row in rows if row[1] is not None]
+    return dates, weights
+
+
+async def get_trainings_log_for_month_query(conn: AsyncConnection, tg_id: int):
+    today = datetime.date.today()
+    start_date = (today - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
+
+    query = """
+    SELECT training_name, training_log, feelings_after
+    FROM users_trainings
+    WHERE tg_id = %s AND date BETWEEN %s AND %s
+    """
+    params = (str(tg_id), start_date, today.strftime('%Y-%m-%d'))
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        rows = await cur.fetchall()
+        if not rows:
+            return None
+        names = [row[0] for row in rows]
+        trainings_logs = [row[1] for row in rows]
+        feelings_after =  [row[2] for row in rows]
+
+    return names, trainings_logs, feelings_after

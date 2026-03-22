@@ -1,5 +1,5 @@
 from aiogram import Router,F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, FSInputFile
 from keyboards.inline_keyboards_builder import get_callback_inline_keyboard
 from aiogram.filters.state import State, StatesGroup, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -14,16 +14,19 @@ class UsersStates(StatesGroup):
 @targets_router.callback_query(F.data == 'Цели')
 async def get_target_menu(callback_query: CallbackQuery):
     await callback_query.message.delete()
-    await callback_query.message.answer(
-        """В этом разделе собраны все твои цели и намерения, которые ты желаешь воплотить в свою жизнь
+    await callback_query.bot.send_photo(
+        chat_id=callback_query.message.chat.id,
+        photo= FSInputFile('/Users/moly/life_style_bot/bot/media/my_targets.png'),
+        caption= """В этом разделе собраны все твои цели и намерения, которые ты желаешь воплотить в свою жизнь
         Ты можешь задать новую цель, а также вычеркнуть страю, если чувствуешь, что уже воплотил ее. В
          каждом ежеденвном отчете ментор будет обращать на твои цели внимание""",
-        reply_markup= get_callback_inline_keyboard(
+        reply_markup=get_callback_inline_keyboard(
             'Активные цели',
             'Новая цель',
             '🔙 В начало'
-        )
     )
+    )
+
 
 @targets_router.callback_query(F.data == 'Новая цель')
 async def write_new_target(callback_query: CallbackQuery, state: FSMContext, conn:AsyncConnection):
