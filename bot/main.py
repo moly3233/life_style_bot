@@ -16,6 +16,7 @@ from handlers.users_targets_handler import targets_router
 from handlers.sport_traker_handler import sport_traker
 from handlers.tracker_imt_handler import tracker_imt_router
 from handlers.admins_handler import admin_router
+from handlers.integrations_hanler import integrations_router
 from utils.reminders import start_reminders, send_daily_remind
 import asyncio
 import logging
@@ -63,8 +64,10 @@ async def main():
     dp.include_router(targets_router)
     dp.include_router(sport_traker)
     dp.include_router(tracker_imt_router)
+    dp.include_router(integrations_router)
     dp.include_router(admin_router)
     dp.include_router(other_router)
+
     start_reminders(bot,conn)
 
     await dp.start_polling(bot, disable_notifications=True)

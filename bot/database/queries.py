@@ -407,3 +407,13 @@ async def get_trainings_log_for_month_query(conn: AsyncConnection, tg_id: int):
         feelings_after =  [row[2] for row in rows]
 
     return names, trainings_logs, feelings_after
+
+async def input_notion_token_query(conn:AsyncConnection,tg_id:int, notion_token:str):
+    query = """
+        INSERT INTO user_integrations (tg_id,notion_token) VALUES (%s, %s)
+    """
+    params = (str(tg_id), notion_token)
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        await conn.commit()
