@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from bot.handlers.load_every_day_report_handler import start_process
+from handlers.load_every_day_report_handler import start_process
 
 
 other_router = Router()

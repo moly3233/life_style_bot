@@ -3,11 +3,11 @@ from aiogram import Router, Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command, StateFilter
 from psycopg import AsyncConnection
-from bot.filters.is_admin_filter import AdminFilter
+from filters.is_admin_filter import AdminFilter
 from aiogram import Bot
 from aiogram.filters.state import State,StateFilter, StatesGroup
 from aiogram.fsm.context import FSMContext
-from bot.database.queries import get_id_users_query
+from database.queries import get_id_users_query
 
 logger = logging.getLogger(__name__)
 

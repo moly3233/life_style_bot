@@ -1,11 +1,11 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from psycopg import AsyncConnection
-from bot.database.queries import get_user_bmi, change_weight_query, change_height_query
-from bot.handlers.load_every_day_report_handler import start_process
-from bot.promts.sport_tracker_promts import prompt_bmi_simple
-from bot.api_openrouter.api_openrouter import get_ai
-from bot.keyboards.inline_keyboards_builder import get_callback_inline_keyboard
+from database.queries import get_user_bmi, change_weight_query, change_height_query
+from handlers.load_every_day_report_handler import start_process
+from promts.sport_tracker_promts import prompt_bmi_simple
+from api_openrouter.api_openrouter import get_ai
+from keyboards.inline_keyboards_builder import get_callback_inline_keyboard
 from aiogram.filters.state import State,StateFilter, StatesGroup
 from aiogram.fsm.context import FSMContext
 

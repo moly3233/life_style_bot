@@ -1,13 +1,13 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message, FSInputFile
 from psycopg import AsyncConnection
-from bot.keyboards.inline_keyboards_builder import get_callback_inline_keyboard
+from keyboards.inline_keyboards_builder import get_callback_inline_keyboard
 from aiogram.filters.state import State, StatesGroup,StateFilter
 from aiogram.fsm.context import FSMContext
 from handlers.load_every_day_report_handler import start_process
-from bot.api_openrouter.api_openrouter import get_ai
-from bot.promts.sport_tracker_promts import prompt_training_mentor
-from bot.database.queries import load_user_training_query,get_trainings_dates,get_training_info_query
+from api_openrouter.api_openrouter import get_ai
+from promts.sport_tracker_promts import prompt_training_mentor
+from database.queries import load_user_training_query,get_trainings_dates,get_training_info_query
 
 
 
@@ -24,7 +24,7 @@ async def sport_traker_menu(callback_query: CallbackQuery):
    await callback_query.message.delete()
    await callback_query.bot.send_photo(
        chat_id=callback_query.message.chat.id,
-       photo= FSInputFile('/Users/moly/life_style_bot/bot/media/pe.png'),
+       photo= FSInputFile('/app/bot/media/pe.png'),
        caption= 'Здесь ты полностью можешь сосредоточиться на одной из твоих форм жизни - теле. Тренируй его, следи за ним.',
        reply_markup=get_callback_inline_keyboard(
            'Добавить тренировку',
@@ -151,7 +151,7 @@ async def get_my_trainings(callback_query:CallbackQuery, conn:AsyncConnection):
     data = await get_trainings_dates(conn,callback_query.from_user.id)
     await callback_query.bot.send_photo(
         chat_id=callback_query.message.chat.id,
-        photo=FSInputFile('/Users/moly/life_style_bot/bot/media/my_trainings.png'),
+        photo=FSInputFile('/app/bot/media/my_trainings.png'),
         caption= '🏋️ Вот все твои тренировки',
         reply_markup= get_callback_inline_keyboard(
             *data,

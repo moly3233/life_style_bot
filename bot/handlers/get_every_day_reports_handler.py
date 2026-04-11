@@ -13,7 +13,7 @@ async def get_all_dates(callback_query: CallbackQuery, conn: AsyncConnection):
     dates = await get_all_dates_query(conn, callback_query.from_user.id)
     kb = get_callback_inline_keyboard(*dates,'🔙 В начало')
     await callback_query.message.answer_photo(
-        photo = FSInputFile('/Users/moly/life_style_bot/bot/media/reports.png'),
+        photo = FSInputFile('/app/bot/media/reports.png'),
         caption = 'Вот все даты твоих отчетов.\nНажми на нужную, чтобы получить подробности',
         reply_markup = kb
     )

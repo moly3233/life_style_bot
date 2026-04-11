@@ -21,7 +21,7 @@ statistics_router = Router()
 async def statistics_menu(callback_query: CallbackQuery):
     await callback_query.message.delete()
     await callback_query.message.answer_photo(
-        photo = FSInputFile('/Users/moly/life_style_bot/bot/media/statistics.png'),
+        photo = FSInputFile('/app/bot/media/statistics.png'),
         caption= '✅ Выбери по каким отчетам ты хочешь получить статистику',
         reply_markup= get_callback_inline_keyboard(
             'По ежедневным отчетам за неделю',
