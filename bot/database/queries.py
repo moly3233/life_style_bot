@@ -408,11 +408,22 @@ async def get_trainings_log_for_month_query(conn: AsyncConnection, tg_id: int):
 
     return names, trainings_logs, feelings_after
 
+async def insert_user_to_users_integrations(conn: AsyncConnection, tg_id: int):
+    query = """
+        INSERT INTO user_integrations (tg_id) VALUES (%s);
+    """
+    params = (str(tg_id),)
+    async with conn.cursor() as cur:
+        await cur.execute(query, params)
+        await conn.commit()
+
 async def input_notion_token_query(conn:AsyncConnection,tg_id:int, notion_token:str):
     query = """
-        INSERT INTO user_integrations (tg_id,notion_token) VALUES (%s, %s)
+        UPDATE user_integrations
+        SET notion_token = %s
+        WHERE tg_id = %s;
     """
-    params = (str(tg_id), notion_token)
+    params = ( notion_token, str(tg_id), )
 
     async with conn.cursor() as cur:
         await cur.execute(query, params)

@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from keyboards.inline_keyboards_builder import get_callback_inline_keyboard
 from psycopg import AsyncConnection
 from utils.validate_tokens import validate_notion_token
-from database.queries import input_notion_token_query
+from database.queries import input_notion_token_query, insert_user_to_users_integrations
 from handlers.load_every_day_report_handler import start_process
 
 
@@ -16,8 +16,9 @@ class InputNotionToken(StatesGroup):
     wait_token = State()
 
 @integrations_router.callback_query(F.data == 'Интеграция с соц сетями')
-async def integrations_menu(callback_query: CallbackQuery):
+async def integrations_menu(callback_query: CallbackQuery, conn: AsyncConnection):
     await callback_query.message.delete()
+    await insert_user_to_users_integrations(conn, callback_query.from_user.id)
     await callback_query.message.answer(
         "Здесь ты сможешь интегрировать бота с другими сервисами.\n Выбери один из доступных!",
         reply_markup= get_callback_inline_keyboard(
