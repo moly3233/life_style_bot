@@ -6,6 +6,7 @@ from handlers.load_every_day_report_handler import start_process
 from promts.sport_tracker_promts import prompt_bmi_simple
 from api_openrouter.api_openrouter import get_ai
 from keyboards.inline_keyboards_builder import get_callback_inline_keyboard
+from filters.is_true_num import isNumber
 from aiogram.filters.state import State,StateFilter, StatesGroup
 from aiogram.fsm.context import FSMContext
 
@@ -67,17 +68,17 @@ async def wait_user_weight(callback_query: CallbackQuery, state: FSMContext):
     )
 
 
-@tracker_imt_router.message(StateFilter(user_states.input_weight), lambda x: x.text.isdigit())
+@tracker_imt_router.message(StateFilter(user_states.input_weight), isNumber())
 async def change_weight(message: Message, state: FSMContext, conn: AsyncConnection):
     await change_weight_query(conn,
                               message.from_user.id,
-                              int(message.text)
+                              float(message.text)
                               )
     await message.answer(f'Вес изменен на {message.text} кг')
     await state.clear()
     await start_process(message, conn)
 
-@tracker_imt_router.message(StateFilter(user_states.input_weight), lambda x: not x.text.isdigit())
+@tracker_imt_router.message(StateFilter(user_states.input_weight), lambda x: not isNumber())
 async def fail_change_weight(message: Message, ):
     await message.answer('Введите только число - ваш новый вес')
 
@@ -87,14 +88,14 @@ async def wait_user_height(callback_query: CallbackQuery, state: FSMContext):
     await state.set_state(user_states.input_height)
     await callback_query.message.answer( '⚡️<i>Смена Роста. Напиши свой новый рост</i>')
 
-@tracker_imt_router.message(StateFilter(user_states.input_height), lambda x:  x.text.isdigit())
+@tracker_imt_router.message(StateFilter(user_states.input_height), isNumber())
 async def change_height(message: Message, state: FSMContext, conn: AsyncConnection):
-    await change_height_query(conn,message.from_user.id, int(message.text))
+    await change_height_query(conn,message.from_user.id, float(message.text))
     await state.clear()
     await message.answer(f'Рост изменен на {message.text} см')
     await start_process(message,conn)
 
-@tracker_imt_router.message(StateFilter(user_states.input_height), lambda x: not x.text.isdigit())
+@tracker_imt_router.message(StateFilter(user_states.input_height), not isNumber())
 async def fail_change_height(message: Message, ):
     await message.answer('Введите только число - ваш новый рост')
 

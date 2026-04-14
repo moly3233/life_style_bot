@@ -259,7 +259,7 @@ async def get_training_info_query(conn: AsyncConnection, tg_id:int, training_dat
         }
     return res
 
-async def change_weight_query(conn: AsyncConnection, tg_id: int, weight: int):
+async def change_weight_query(conn: AsyncConnection, tg_id: int, weight: float):
     today = datetime.date.today().strftime('%Y-%m-%d')
 
     async with conn.cursor() as cur:
@@ -298,7 +298,7 @@ async def change_weight_query(conn: AsyncConnection, tg_id: int, weight: int):
         )
     await conn.commit()
 
-async def change_height_query(conn:AsyncConnection, tg_id: int, height: int):
+async def change_height_query(conn:AsyncConnection, tg_id: int, height: float):
     today = datetime.date.today().strftime('%Y-%m-%d')
 
     async with conn.cursor() as cur:

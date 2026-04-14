@@ -78,7 +78,7 @@ async def fail_input_mood_before(message:Message, state:FSMContext,conn:AsyncCon
 async def input_training_log_process(message:Message, state:FSMContext):
     await state.update_data(training_log=message.text)
     await state.set_state(user_states.input_mood_after)
-    await message.answer('Спасибо за описание! Теперь напиши оценку своего состояния после тренировки')
+    await message.answer('Спасибо за описание! Теперь напиши оценку своего состояния после тренировки (от 1 до 10)')
 
 @sport_traker.message(StateFilter(user_states.input_training_log), lambda x: len(x.text)<5)
 async def fail_input_training_log(message:Message, state:FSMContext,conn:AsyncConnection):
