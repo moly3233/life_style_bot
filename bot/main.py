@@ -8,6 +8,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import parse_mode
 from redis.asyncio import Redis
 from database.queries import get_id_admins_query
+from keyboards.commands import get_commands
 from handlers.other_handler import other_router
 from handlers.load_every_day_report_handler import main_router
 from handlers.get_every_day_reports_handler import get_reports_router
@@ -55,6 +56,7 @@ async def main():
         config.pg_settings.port,
     )
     admins = await get_id_admins_query(conn)
+    await get_commands(bot)
     dp['admins'] = set(admins)
     dp['conn'] = conn
     dp['bot'] = bot
