@@ -9,4 +9,5 @@ COPY . .
 
 WORKDIR /app/bot
 
+EXPOSE 10000
 CMD ["python", "-m", "main"]
