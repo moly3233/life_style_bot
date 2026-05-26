@@ -46,7 +46,7 @@ async def start_process(message: Message, conn: AsyncConnection):
                         'Мои отчеты',
                         'Статистика',
                         'Цели',
-                        'Новости'
+                        'Новости',
                         'Интеграция с соц сетями',
                     ),
         caption= '\n'.join(lines),
