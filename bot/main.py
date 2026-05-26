@@ -75,6 +75,16 @@ async def main():
     await bot.set_webhook(webhook_url)
 
     app = web.Application()
+
+    async def home(request):
+        return web.Response(text="Bot is running")
+
+    async def health(request):
+        return web.json_response({"status": "ok"})
+
+    app.router.add_get("/", home)
+    app.router.add_get("/health", health)
+
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
     setup_application(app, dp, bot=bot)
 
