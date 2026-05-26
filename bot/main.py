@@ -17,6 +17,7 @@ from handlers.get_every_day_reports_handler import get_reports_router
 from handlers.get_statistics_handler import statistics_router
 from handlers.users_targets_handler import targets_router
 from handlers.sport_traker_handler import sport_traker
+from handlers.get_news_handler import news_handler
 from handlers.tracker_imt_handler import tracker_imt_router
 from handlers.admins_handler import admin_router
 from handlers.integrations_hanler import integrations_router
@@ -58,6 +59,7 @@ async def main():
     dp.include_router(get_reports_router)
     dp.include_router(statistics_router)
     dp.include_router(targets_router)
+    dp.include_router(news_handler)
     dp.include_router(sport_traker)
     dp.include_router(tracker_imt_router)
     dp.include_router(integrations_router)

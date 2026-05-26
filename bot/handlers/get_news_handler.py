@@ -1,18 +1,16 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
-from bot.keyboards.inline_keyboards_builder import get_callback_inline_keyboard
+from keyboards.inline_keyboards_builder import get_callback_inline_keyboard
 from environs import Env
 import requests
 
 env = Env()
 news_handler = Router()
 
+env.read_env()
+TOKEN = env.str("NEWSDATAIO_TOKEN")
 
-TOKEN = env.str("pub_b2498c90161c4b4e8fbd7e898bb8d84f")
 
-
-
-TOKEN = ""
 
 CATEGORIES = {
     "тема: 🌍 Мир": f"https://newsdata.io/api/1/latest?apikey={TOKEN}&language=ru&category=world",
